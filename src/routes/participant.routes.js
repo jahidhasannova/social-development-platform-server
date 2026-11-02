@@ -59,6 +59,13 @@ router.post("/:eventId/join", verifyToken, async (req, res) => {
       message: "Successfully joined the event",
     });
   } catch (error) {
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: "You have already joined this event",
+      });
+    }
+
     return res.status(500).json({
       success: false,
       message: "Failed to join event",
