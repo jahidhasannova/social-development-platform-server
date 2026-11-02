@@ -1,8 +1,9 @@
-
 require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
+const { connectDB } = require("./config/db");
+const eventRoutes = require("./routes/event.routes");
 
 const app = express();
 
@@ -29,8 +30,21 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+app.use("/api/events", eventRoutes);
+
 const PORT = process.env.PORT || 5001;
 
-app.listen(PORT, () => {
-  console.log(`Kindora server running on port ${PORT}`);
-});
+const startServer = async () => {
+  try {
+    await connectDB();
+
+    app.listen(PORT, () => {
+      console.log(`Kindora server running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("Server startup failed:", error.message);
+    process.exit(1);
+  }
+};
+
+startServer();
