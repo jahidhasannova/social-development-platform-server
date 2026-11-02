@@ -47,13 +47,11 @@ router.post("/:eventId/join", verifyToken, async (req, res) => {
       });
     }
 
-    const participant = {
+    await getParticipantsCollection().insertOne({
       eventId: new ObjectId(eventId),
       userEmail,
       joinedAt: new Date(),
-    };
-
-    await getParticipantsCollection().insertOne(participant);
+    });
 
     return res.status(201).json({
       success: true,
@@ -63,6 +61,50 @@ router.post("/:eventId/join", verifyToken, async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to join event",
+    });
+  }
+});
+
+router.get("/joined", verifyToken, async (req, res) => {
+  try {
+    const participants = await getParticipantsCollection()
+      .aggregate([
+        {
+          $match: {
+            userEmail: req.user.email,
+          },
+        },
+        {
+          $lookup: {
+            from: "events",
+            localField: "eventId",
+            foreignField: "_id",
+            as: "event",
+          },
+        },
+        {
+          $unwind: "$event",
+        },
+        {
+          $sort: {
+            "event.eventDate": 1,
+          },
+        },
+      ])
+      .toArray();
+
+    return res.status(200).json({
+      success: true,
+      count: participants.length,
+      data: participants.map((participant) => ({
+        ...participant.event,
+        joinedAt: participant.joinedAt,
+      })),
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch joined events",
     });
   }
 });
