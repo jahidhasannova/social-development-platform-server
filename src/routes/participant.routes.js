@@ -23,9 +23,10 @@ router.post("/:eventId/join", verifyToken, async (req, res) => {
     }
 
     const eventsCollection = getDB().collection("events");
+
     const event = await eventsCollection.findOne({
       _id: new ObjectId(eventId),
-      eventDate: { $gte: new Date() },
+      eventDate: { $gte: new Date().toISOString() },
     });
 
     if (!event) {

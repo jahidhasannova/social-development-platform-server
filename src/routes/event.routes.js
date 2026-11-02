@@ -1,3 +1,4 @@
+
 const express = require("express");
 const { ObjectId } = require("mongodb");
 const { z } = require("zod");
@@ -76,7 +77,7 @@ router.get("/", async (req, res) => {
   try {
     const events = await getEventsCollection()
       .find({
-        eventDate: { $gte: new Date() },
+        eventDate: { $gte: new Date().toISOString() },
       })
       .sort({ eventDate: 1 })
       .toArray();
@@ -98,7 +99,7 @@ router.get("/recent", async (req, res) => {
   try {
     const events = await getEventsCollection()
       .find({
-        eventDate: { $gte: new Date() },
+        eventDate: { $gte: new Date().toISOString() },
       })
       .sort({ eventDate: 1 })
       .limit(6)
