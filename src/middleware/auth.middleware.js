@@ -1,13 +1,17 @@
-const { createRemoteJWKSet, jwtVerify } = require("jose");
-
 const AUTH_URL = process.env.AUTH_BASE_URL || "http://localhost:3000";
 
-const JWKS = createRemoteJWKSet(
-  new URL(`${AUTH_URL}/api/auth/jwks`)
-);
+let JWKS;
 
 const verifyToken = async (req, res, next) => {
   try {
+    const { createRemoteJWKSet, jwtVerify } = await import("jose");
+
+    if (!JWKS) {
+      JWKS = createRemoteJWKSet(
+        new URL(`${AUTH_URL}/api/auth/jwks`)
+      );
+    }
+
     const authorization = req.headers.authorization;
 
     if (!authorization || !authorization.startsWith("Bearer ")) {
